@@ -41,8 +41,8 @@ swift test
 
 ```bash
 osaurus manifest extract .build/release/libosaurus-pptx.dylib
-osaurus tools package dev.osaurus.pptx 0.1.0
-osaurus tools install ./dev.osaurus.pptx-0.1.0.zip
+osaurus tools package osaurus.pptx 0.1.0
+osaurus tools install ./osaurus.pptx-0.1.0.zip
 ```
 
 ## Publishing

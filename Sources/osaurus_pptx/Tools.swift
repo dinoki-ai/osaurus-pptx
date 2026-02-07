@@ -47,7 +47,7 @@ struct CreatePresentationTool {
 
   struct Args: Decodable {
     let title: String
-    let layout: String?  // "16:9", "4:3", or "WxH" in inches
+    let size: String?  // "16:9", "4:3", or "WxH" in inches
     let theme: String?  // "modern", "corporate", "creative", "minimal", "dark"
     let _context: FolderContext?
   }
@@ -60,15 +60,15 @@ struct CreatePresentationTool {
     }
 
     let slideSize: SlideSize
-    if let layout = input.layout {
-      switch layout {
+    if let size = input.size {
+      switch size {
       case "16:9", "widescreen":
         slideSize = .widescreen
       case "4:3", "standard":
         slideSize = .standard
       default:
         // Try to parse "WxH" format
-        let parts = layout.split(separator: "x")
+        let parts = size.split(separator: "x")
         if parts.count == 2,
           let w = Double(parts[0]),
           let h = Double(parts[1])
@@ -87,11 +87,16 @@ struct CreatePresentationTool {
 
     presentations[pres.id] = pres
 
+    let widthInches = Double(pres.slideWidth) / Double(Units.emuPerInch)
+    let heightInches = Double(pres.slideHeight) / Double(Units.emuPerInch)
+
     return jsonSuccess([
       "presentation_id": pres.id,
       "title": pres.title,
       "theme": theme.name,
       "slide_count": 0,
+      "width_inches": widthInches,
+      "height_inches": heightInches,
     ])
   }
 }

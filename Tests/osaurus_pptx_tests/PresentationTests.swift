@@ -263,7 +263,7 @@ struct ToolExecutionTests {
     var presentations: [String: Presentation] = [:]
     let tool = CreatePresentationTool()
     let result = tool.run(
-      args: "{\"title\": \"Custom\", \"layout\": \"4:3\", \"theme\": \"dark\"}",
+      args: "{\"title\": \"Custom\", \"size\": \"4:3\", \"theme\": \"dark\"}",
       presentations: &presentations)
     let json = parseJSON(result)
     #expect(json?["theme"] as? String == "Dark")

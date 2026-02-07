@@ -73,8 +73,8 @@ nonisolated(unsafe) private var api: osr_plugin_api = {
   api.get_manifest = { ctxPtr in
     let manifest = """
       {
-        "plugin_id": "dev.osaurus.pptx",
-        "name": "Osaurus Presentation",
+        "plugin_id": "osaurus.pptx",
+        "name": "Osaurus PPTX",
         "version": "0.1.0",
         "description": "Create, modify, and export PowerPoint presentations. Supports text, images, shapes, tables, charts, themes, and more.",
         "license": "MIT",
@@ -90,7 +90,7 @@ nonisolated(unsafe) private var api: osr_plugin_api = {
                 "type": "object",
                 "properties": {
                   "title": {"type": "string", "description": "Presentation title"},
-                  "layout": {"type": "string", "description": "Slide size: '16:9' (default), '4:3', or 'WxH' in inches (e.g. '10x7.5')"},
+                  "size": {"type": "string", "description": "Slide size: '16:9' (default), '4:3', or 'WxH' in inches (e.g. '10x7.5')"},
                   "theme": {"type": "string", "description": "Theme preset: modern (default), corporate, creative, minimal, dark"}
                 },
                 "required": ["title"]
@@ -100,7 +100,7 @@ nonisolated(unsafe) private var api: osr_plugin_api = {
             },
             {
               "id": "add_slide",
-              "description": "Add a new slide to a presentation.",
+              "description": "Add a new slide to a presentation. The layout parameter is metadata only — you must add elements (text, images, shapes, etc.) manually using add_text, add_image, and other tools.",
               "parameters": {
                 "type": "object",
                 "properties": {
