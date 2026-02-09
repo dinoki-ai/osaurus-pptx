@@ -1,47 +1,43 @@
-# Osaurus PPTX — Agent Skill Guide
+---
+name: osaurus-pptx
+description: Create PowerPoint (.pptx) presentations from scratch using the Osaurus PPTX plugin. Use when the user asks to build, generate, or create a PowerPoint presentation, slide deck, or .pptx file.
+metadata:
+  author: osaurus
+  version: "0.1.0"
+---
 
-Use this guide when creating PowerPoint presentations with the Osaurus PPTX plugin.
+# Osaurus PPTX
 
-## Overview
-
-This plugin **creates** PowerPoint (.pptx) presentations from scratch. It is not a full round-trip editor — treat every presentation as a fresh build.
+Create PowerPoint (.pptx) presentations from scratch. This plugin is creation-only — treat every presentation as a fresh build.
 
 ## Workflow
 
 Always follow this sequence:
 
-1. **create_presentation** — get a `presentation_id`, slide dimensions, and theme info
-2. **add_slide** (repeat) — add slides one at a time; each returns a `slide_number`
-3. **add_text / add_image / add_shape / add_table / add_chart / set_slide_background** — populate each slide with elements
-4. **save_presentation** — write the final `.pptx` file
+1. **Plan first.** Decide the slide count, layout for each slide, and content before calling any tools. Elements cannot be modified after creation, so get it right on the first pass.
+2. **`create_presentation`** — returns a `presentation_id`, slide dimensions, and theme info.
+3. **`add_slide`** — add one slide at a time. Each returns a `slide_number`. Populate the slide with elements immediately before adding the next slide.
+4. **Add elements** — use `add_text`, `add_image`, `add_shape`, `add_table`, `add_chart`, or `set_slide_background` to populate the current slide.
+5. **`save_presentation`** — write the final `.pptx` file. Nothing is written to disk until this step.
 
-Never skip steps. You must create slides before adding elements. You must save at the end — nothing is written to disk until `save_presentation`.
+Never skip steps. Never add elements before creating a slide. Always save at the end.
 
-## Slide Coordinate System
+## Coordinate System
 
-All positions and sizes are in **inches** measured from the top-left corner of the slide.
+All positions and sizes are in **inches**, measured from the top-left corner of the slide.
 
-### Default slide dimensions (16:9)
+| Aspect ratio | Width | Height |
+|--------------|-------|--------|
+| 16:9 (default) | 13.33" | 7.5" |
+| 4:3 | 10.0" | 7.5" |
 
-- Width: **13.33"**
-- Height: **7.5"**
+The `create_presentation` response includes `width_inches` and `height_inches` — always use these for positioning calculations rather than hardcoded values.
 
-### 4:3 slides
+**Safe margins:** Leave at least **0.5"** on all edges. Usable area for 16:9 is x: 0.5"–12.83", y: 0.5"–7.0".
 
-- Width: **10.0"**
-- Height: **7.5"**
+## Layout Recipes
 
-The `create_presentation` response includes `width_inches` and `height_inches` — use these values for positioning calculations.
-
-### Safe margins
-
-Leave at least **0.5"** on all edges for a clean look. Usable area for 16:9:
-- X range: 0.5" to 12.83"
-- Y range: 0.5" to 7.0"
-
-## Positioning Recipes
-
-Use these coordinates for common slide layouts on 16:9 slides. Adjust proportionally for other sizes.
+Reference coordinates for common 16:9 slide layouts. Adjust proportionally for other aspect ratios.
 
 ### Title Slide
 
@@ -56,7 +52,7 @@ Subtitle: x=1.0  y=4.0  w=11.33 h=1.0  font_size=24            alignment=center
 Heading:  x=1.0  y=2.5  w=11.33 h=1.5  font_size=36 bold=true  alignment=center
 ```
 
-### Title + Body Content
+### Title + Body
 
 ```
 Title:    x=0.75 y=0.5  w=11.83 h=1.0  font_size=32 bold=true
@@ -71,6 +67,21 @@ Left:     x=0.75 y=1.75 w=5.67  h=5.0  font_size=16
 Right:    x=6.67 y=1.75 w=5.67  h=5.0  font_size=16
 ```
 
+### Title + Image
+
+```
+Title:    x=0.75 y=0.5  w=11.83 h=1.0  font_size=32 bold=true
+Image:    x=2.5  y=1.75 w=8.33  h=5.0
+```
+
+### Title + Image Left + Text Right
+
+```
+Title:    x=0.75 y=0.5  w=11.83 h=1.0  font_size=32 bold=true
+Image:    x=0.75 y=1.75 w=5.67  h=5.0
+Text:     x=6.67 y=1.75 w=5.67  h=5.0  font_size=16
+```
+
 ### Title + Table or Chart
 
 ```
@@ -79,101 +90,118 @@ Table:    x=0.75 y=1.75 w=11.83 h=5.0
 Chart:    x=1.5  y=1.75 w=10.33 h=5.0
 ```
 
-### Title + Image
+### Full-Bleed Image (no title)
 
 ```
-Title:    x=0.75 y=0.5  w=11.83 h=1.0  font_size=32 bold=true
-Image:    x=2.5  y=1.75 w=8.33  h=5.0
+Image:    x=0.0  y=0.0  w=13.33 h=7.5
 ```
 
 ## Themes
 
-Five built-in themes. Choose at creation time with the `theme` parameter:
+Choose a theme at creation time with the `theme` parameter. Let the theme handle styling — avoid hardcoding colors.
 
 | Theme | Style | Best for |
 |-------|-------|----------|
-| **modern** (default) | Blue/orange, Calibri | General purpose |
-| **corporate** | Navy/steel blue, Georgia headings | Business, formal |
-| **creative** | Pink/purple, Avenir Next | Marketing, design |
-| **minimal** | Grayscale, Helvetica Neue | Clean, text-heavy |
-| **dark** | Purple/teal on dark bg, SF Pro | Technical, modern |
+| `modern` (default) | Blue/orange, Calibri | General purpose |
+| `corporate` | Navy/steel blue, Georgia headings | Business, formal |
+| `creative` | Pink/purple, Avenir Next | Marketing, design |
+| `minimal` | Grayscale, Helvetica Neue | Clean, text-heavy |
+| `dark` | Purple/teal on dark bg, SF Pro | Technical, modern |
 
-Do not hardcode colors when possible — the theme provides defaults for text, headers, table headers, and more. Let the theme do the styling work.
+**Dark theme warning:** Background color is `121212`. Avoid dark text colors. Set slide backgrounds explicitly if needed.
 
-When using the **dark** theme, remember that the background is dark (`121212`). Set slide backgrounds explicitly if needed, and avoid dark text colors on dark slides.
+**Choosing a theme:** Default to `modern` unless the user specifies a preference or the content suggests otherwise (e.g., quarterly business reviews suit `corporate`; pitch decks suit `creative`; developer talks suit `dark`).
 
-## Tool Tips
+## Design Best Practices
 
-### create_presentation
-- The `size` parameter controls aspect ratio, not layout. Default is `"16:9"`. Use `"4:3"` for standard or `"WxH"` for custom (e.g., `"10x7.5"`).
+Follow these guidelines to produce professional-looking slides:
 
-### add_slide
-- The `layout` parameter is **metadata only**. It does not auto-generate any content. Every slide starts blank regardless of layout type. You must add all elements manually.
+- **Keep slides focused.** One idea per slide. Aim for 5–7 bullet points max per slide.
+- **Use short text.** Bullet points should be phrases, not sentences. Keep titles under 8 words.
+- **Vary layouts.** Alternate between text-heavy, visual, and data slides to maintain visual interest.
+- **Use font hierarchy.** Titles: 32–40pt bold. Body: 16–18pt. Captions: 12–14pt.
+- **Use charts over tables** when showing trends, comparisons, or proportions. Reserve tables for precise reference data.
+- **End with a closing slide.** Use a section header layout with "Thank You", "Questions?", or a call to action.
 
-### add_text
-- Use `\n` in the `text` parameter for line breaks / multiple paragraphs.
+## Tool Reference
+
+### `create_presentation`
+
+- `size` controls aspect ratio, not layout. Default is `"16:9"`. Also accepts `"4:3"` or custom `"WxH"` (e.g., `"10x7.5"`).
+- `theme` selects a built-in theme. See the Themes section above.
+
+### `add_slide`
+
+- `layout` is **metadata only**. It does not auto-generate content. Every slide starts blank. You must add all elements manually.
+
+### `add_text`
+
+- Use `\n` for line breaks and multi-paragraph text.
 - Set `bullets=true` for bullet-pointed lists.
-- Hex colors should omit the `#` prefix: use `"FF0000"` not `"#FF0000"`.
-- For centered titles, use `alignment: "center"` and `bold: true`.
+- Hex colors must omit the `#` prefix: use `"FF0000"`, not `"#FF0000"`.
+- For centered titles, set `alignment: "center"` and `bold: true`.
 
-### add_image
+### `add_image`
+
 - Paths can be relative to the workspace or absolute.
 - Supported formats: PNG, JPG, GIF, SVG, BMP, TIFF.
-- This tool requires user permission (`ask` policy).
+- Requires user permission (`ask` policy).
 
-### add_shape
-- 21 shape types available: `rect`, `round_rect`, `ellipse`, `triangle`, `diamond`, `pentagon`, `hexagon`, `octagon`, `star4`, `star5`, `star6`, `right_arrow`, `left_arrow`, `up_arrow`, `down_arrow`, `heart`, `cloud`, `lightning`, `line`, `parallelogram`, `trapezoid`.
+### `add_shape`
+
+- Available types: `rect`, `round_rect`, `ellipse`, `triangle`, `diamond`, `pentagon`, `hexagon`, `octagon`, `star4`, `star5`, `star6`, `right_arrow`, `left_arrow`, `up_arrow`, `down_arrow`, `heart`, `cloud`, `lightning`, `line`, `parallelogram`, `trapezoid`.
 - Shapes can contain text via the `text` parameter — useful for labeled diagrams and flowcharts.
 
-### add_table
-- `rows` is a 2D array of strings. The first row is the header by default (`has_header: true`).
-- Column widths auto-distribute evenly. Use `column_widths` for custom sizing (must match column count).
+### `add_table`
 
-### add_chart
+- `rows` is a 2D array of strings. The first row is the header by default (`has_header: true`).
+- Column widths auto-distribute evenly. Use `column_widths` for custom sizing (array length must match column count).
+
+### `add_chart`
+
 - Types: `bar`, `column`, `line`, `pie`, `doughnut`.
 - Each series needs a `name` and `values` array. Optionally set a `color` per series.
 - `categories` are the x-axis labels.
 
-### save_presentation
+### `set_slide_background`
+
+- Sets a solid color background for a slide. Useful with the `dark` theme or for accent slides.
+
+### `delete_slide`
+
+- Removes a slide by `slide_number`. Use this to correct mistakes — delete the slide, re-add it, and rebuild its elements.
+
+### `get_presentation_info`
+
+- Returns slide count and metadata. Pass `include_details: true` to see all elements on all slides. Use this to verify the presentation before saving.
+
+### `read_presentation`
+
+- Reads an existing `.pptx` file. Only preserves text elements and slide backgrounds. Images, shapes, tables, and charts are not parsed. Use primarily for inspecting text content.
+
+### `save_presentation`
+
 - Always call this when done. Nothing is persisted until you save.
 - The `.pptx` extension is added automatically if missing.
-- This tool requires user permission (`ask` policy).
+- Requires user permission (`ask` policy).
 
-## Limitations
+## Limitations and Corrections
 
-Be aware of these constraints:
+**Elements cannot be modified after creation.** There are no tools to update text, reposition elements, or change properties on existing elements. Plan each slide fully before adding elements.
 
-1. **Creation-focused.** There are no tools to update or remove individual elements after adding them. If a slide needs correction, use `delete_slide` to remove it, re-add it with `add_slide`, and rebuild its elements.
+**Slides cannot be reordered.** Slides are ordered by insertion. Plan the sequence in advance. If order matters and it's wrong, rebuild the presentation.
 
-2. **No element modification.** You cannot change text, reposition elements, or update properties on existing elements. Plan each slide fully before adding elements.
+**To fix a slide:** Call `delete_slide` to remove it, `add_slide` to re-add at the same position, rebuild all its elements, then `save_presentation`.
 
-3. **No slide reordering.** Slides are ordered by insertion. Plan the slide sequence in advance.
+**To inspect what was built:** Call `get_presentation_info` with `include_details: true` to review all slides and elements before saving.
 
-4. **read_presentation is limited.** Reading an existing `.pptx` only preserves text elements and slide backgrounds. Images, shapes, tables, and charts are not parsed. Use `read_presentation` primarily for inspecting text content, not for full round-trip editing.
+## Example
 
-5. **One save at the end.** Build the entire presentation in memory, then call `save_presentation` once. You can save multiple times to different paths if needed.
-
-## Strategy for Multi-Slide Presentations
-
-1. Call `create_presentation` once.
-2. Plan all slides before building — decide the content and layout for each.
-3. Add slides sequentially: `add_slide` then immediately populate with elements before moving to the next slide. This keeps slide numbers predictable.
-4. Call `save_presentation` once at the end.
-5. If the user wants changes, use `delete_slide` on the affected slide, `add_slide` to re-add at the same position, rebuild its elements, and save again.
-
-## Correction Strategy
-
-Since elements cannot be modified after creation:
-
-- **Wrong text/formatting on a slide:** `delete_slide` the slide, `add_slide` again, re-add all elements with corrections.
-- **Wrong slide order:** Unfortunately slides cannot be reordered. Rebuild the presentation if order matters.
-- **Want to inspect what was built:** Use `get_presentation_info` with `include_details: true` to see all elements on all slides.
-
-## Example: Building a 3-Slide Presentation
+Build a 3-slide corporate presentation:
 
 ```
 1. create_presentation(title="Q4 Report", theme="corporate")
-   → get presentation_id, note width=13.33, height=7.5
+   → presentation_id, width=13.33, height=7.5
 
 2. add_slide(presentation_id, layout="title")
    → slide 1
