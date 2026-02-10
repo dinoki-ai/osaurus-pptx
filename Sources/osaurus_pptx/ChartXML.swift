@@ -10,8 +10,15 @@ enum ChartXMLGenerator {
   ]
 
   static func generateChartXML(chart: ChartElement) -> String {
-    let titleXML =
-      chart.chartTitle.map { generateTitleXML($0) } ?? "<c:autoTitleDeleted val=\"1\"/>"
+    let titleXML: String
+    if let title = chart.chartTitle {
+      titleXML = """
+        \(generateTitleXML(title))
+            <c:autoTitleDeleted val="0"/>
+        """
+    } else {
+      titleXML = "<c:autoTitleDeleted val=\"1\"/>"
+    }
 
     let plotAreaXML: String
     switch chart.chartType {
@@ -41,7 +48,6 @@ enum ChartXMLGenerator {
       <c:chartSpace xmlns:c="\(OOXML.nsChart)" xmlns:a="\(OOXML.nsA)" xmlns:r="\(OOXML.nsR)">
         <c:chart>
           \(titleXML)
-          <c:autoTitleDeleted val="\(chart.chartTitle != nil ? "0" : "1")"/>
           <c:plotArea>
             <c:layout/>
       \(plotAreaXML)
@@ -118,7 +124,6 @@ enum ChartXMLGenerator {
   // MARK: - Bar/Column Chart
 
   private static func generateBarChartXML(chart: ChartElement, horizontal: Bool) -> String {
-    let direction = horizontal ? "bar" : "col"
     var seriesXML = ""
 
     for (idx, series) in chart.series.enumerated() {
@@ -139,7 +144,7 @@ enum ChartXMLGenerator {
     }
 
     return """
-            <c:\(direction)Chart>
+            <c:barChart>
               <c:barDir val="\(horizontal ? "bar" : "col")"/>
               <c:grouping val="clustered"/>
               <c:varyColors val="0"/>
@@ -147,7 +152,7 @@ enum ChartXMLGenerator {
               \(dataLabelsXML(show: chart.showDataLabels))
               <c:axId val="111111111"/>
               <c:axId val="222222222"/>
-            </c:\(direction)Chart>
+            </c:barChart>
             <c:catAx>
               <c:axId val="111111111"/>
               <c:scaling><c:orientation val="minMax"/></c:scaling>

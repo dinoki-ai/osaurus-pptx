@@ -67,7 +67,7 @@ enum Units {
 // MARK: - Default Slide Dimensions
 
 enum SlideDimensions {
-  static let wideWidth = Units.inchesToEMU(13.333)  // 16:9
+  static let wideWidth = 12_192_000  // 16:9 (exactly 13+1/3 inches)
   static let wideHeight = Units.inchesToEMU(7.5)
   static let standardWidth = Units.inchesToEMU(10.0)  // 4:3
   static let standardHeight = Units.inchesToEMU(7.5)

@@ -86,6 +86,9 @@ struct ModelTests {
     #expect(p.slideWidth == SlideDimensions.wideWidth)
     #expect(p.slideHeight == SlideDimensions.wideHeight)
     #expect(p.slides.isEmpty)
+    // Verify exact standard 16:9 dimensions (13+1/3 inches x 7.5 inches)
+    #expect(SlideDimensions.wideWidth == 12_192_000)
+    #expect(SlideDimensions.wideHeight == 6_858_000)
   }
 
   @Test("Presentation init with standard")
@@ -636,6 +639,41 @@ struct XMLGenerationTests {
     #expect(xml.contains("barDir"))
     #expect(xml.contains("Q1"))
     #expect(xml.contains("Q2"))
+  }
+
+  @Test("Column chart uses c:barChart element, not c:colChart")
+  func columnChartUsesBarChartElement() {
+    let pos = ElementPosition(x: 1.0, y: 1.0, width: 8.0, height: 5.0)
+    let chart = ChartElement(
+      chartType: .column,
+      position: pos,
+      chartTitle: "Column Data",
+      series: [ChartSeries(name: "Sales", values: [10, 20, 30], color: nil)],
+      categories: ["A", "B", "C"]
+    )
+    let xml = ChartXMLGenerator.generateChartXML(chart: chart)
+    #expect(xml.contains("<c:barChart>"))
+    #expect(xml.contains("</c:barChart>"))
+    #expect(xml.contains("<c:barDir val=\"col\"/>"))
+    #expect(!xml.contains("<c:colChart>"))
+    #expect(!xml.contains("</c:colChart>"))
+  }
+
+  @Test("Chart without title emits exactly one autoTitleDeleted element")
+  func chartWithoutTitleNoDuplicate() {
+    let pos = ElementPosition(x: 1.0, y: 1.0, width: 8.0, height: 5.0)
+    let chart = ChartElement(
+      chartType: .bar,
+      position: pos,
+      chartTitle: nil,
+      series: [ChartSeries(name: "Data", values: [1, 2], color: nil)],
+      categories: ["X", "Y"]
+    )
+    let xml = ChartXMLGenerator.generateChartXML(chart: chart)
+    let count = xml.components(separatedBy: "autoTitleDeleted").count - 1
+    #expect(count == 1)
+    #expect(xml.contains("<c:autoTitleDeleted val=\"1\"/>"))
+    #expect(!xml.contains("<c:title>"))
   }
 
   @Test("generateBackgroundXML for solid and gradient")
